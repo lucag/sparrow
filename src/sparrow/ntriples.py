@@ -50,7 +50,7 @@ class ParseError(Exception): pass
 
 quot = {'t': '\t', 'n': '\n', 'r': '\r', '"': '"', '\\': '\\'}
 r_safe = re.compile(r'([\x20\x21\x23-\x5B\x5D-\x7E]+)')
-r_quot = re.compile(r'\\(t|n|r|"|\\)')
+r_quot = re.compile(r'\\([tnr"\\])')
 r_uniquot = re.compile(r'\\u([0-9A-F]{4})|\\U([0-9A-F]{8})')
 
 def unquote(s): 

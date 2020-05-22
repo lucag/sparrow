@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "65a2cf09dd9597cbf6da67abd8e028350bbec22a1f20d95c197e67027dc39ccf"
+            "sha256": "5f9bb316b1f9b14fce811a74d168cbe0ff5f5f5a3ea2b71369974d7edbd8a2a4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -23,13 +23,6 @@
             ],
             "index": "pypi",
             "version": "==0.17.4"
-        },
-        "isodate": {
-            "hashes": [
-                "sha256:2e364a3d5759479cdb2d37cce6b9376ea504db2ff90252a2e5b7cc89cc9ff2d8",
-                "sha256:aa4d33c06640f5352aca96e4b81afd8ab3b47337cc12089822d6f322ac772c81"
-            ],
-            "version": "==0.6.0"
         },
         "lxml": {
             "hashes": [
@@ -61,20 +54,12 @@
             "index": "pypi",
             "version": "==4.3.5"
         },
-        "pyparsing": {
-            "hashes": [
-                "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1",
-                "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"
-            ],
-            "version": "==2.4.7"
-        },
         "rdflib": {
             "hashes": [
-                "sha256:78149dd49d385efec3b3adfbd61c87afaf1281c30d3fcaf1b323b34f603fb155",
-                "sha256:88208ea971a87886d60ae2b1a4b2cdc263527af0454c422118d43fe64b357877"
+                "sha256:90113a68c88324cbd5472a9b59cc6bacc92fc1845ccab9aca527cab7015b4f95"
             ],
             "index": "pypi",
-            "version": "==5.0.0"
+            "version": "==2.4.2"
         },
         "simplejson": {
             "hashes": [
@@ -97,13 +82,6 @@
             ],
             "index": "pypi",
             "version": "==3.17.0"
-        },
-        "six": {
-            "hashes": [
-                "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
-                "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
-            ],
-            "version": "==1.15.0"
         },
         "sparrow": {
             "editable": true,

@@ -1,5 +1,6 @@
 simplejson~=3.17.0
 lxml~=4.3.0
-rdflib~=5.0.0
+rdflib~=2.4.2
 httplib2~=0.17.3
 setuptools~=41.4.0
+zc.buildout

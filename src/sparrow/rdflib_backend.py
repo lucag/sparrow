@@ -7,6 +7,7 @@ try:
     from rdflib.Graph import Graph, ConjunctiveGraph
     from rdflib.store.IOMemory import IOMemory
 except ImportError:
+    print 'rdflib not found'
     rdflib = None
 
 from sparrow.base_backend import BaseBackend
@@ -88,7 +89,7 @@ class RDFLibTripleStore(BaseBackend):
         for prefix, namespace in self._nsmap.items():
             graph.bind(prefix, namespace)
         return StringIO(graph.serialize(format=format))
-        return result
+        # return result
 
     def get_rdfxml(self, context, pretty=False):
         return self._serialize(self._get_context(context), 'xml')

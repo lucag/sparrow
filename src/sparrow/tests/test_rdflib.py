@@ -29,7 +29,7 @@ def test_suite():
     try:
         sparrow.database('rdflib', 'memory')
     except ConnectionError:
-        # rdflib not installed?
+        print 'rdflib not installed?'
         return TestSuite()
     suite = TestSuite()
     suite.addTest(makeSuite(RDFLibTest))
