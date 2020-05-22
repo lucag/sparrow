@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+"zc.buildout" = "*"
+"zope.testrunner" = "*"
+v = {editable = true,version = "*"}
 
 [packages]
 sparrow = {editable = true,path = "."}
