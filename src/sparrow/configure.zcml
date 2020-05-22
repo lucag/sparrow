@@ -1,0 +1,28 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:zcml="http://namespaces.zope.org/zcml"
+           i18n_domain="sparrow">
+
+  <include package="zope.component" file="meta.zcml" />
+  <include package="zope.component" />
+
+  <utility 
+    component=".redland_backend.RedlandTripleStore"
+    provides=".interfaces.ITripleStore"
+    name="redland"/>
+
+  <utility 
+    component=".rdflib_backend.RDFLibTripleStore"
+    provides=".interfaces.ITripleStore"
+    name="rdflib"/>
+
+  <utility 
+    component=".sesame_backend.SesameTripleStore"
+    provides=".interfaces.ITripleStore"
+    name="sesame"/>
+
+  <utility 
+    component=".allegro_backend.AllegroTripleStore"
+    provides=".interfaces.ITripleStore"
+    name="allegro"/>
+
+</configure>
