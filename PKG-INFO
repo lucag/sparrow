@@ -154,7 +154,11 @@ Description:
         
         Changelog for Sparrow
         =====================
-        
+
+        Sparrow 1.0.1 (2020-05-27)
+        --------------------------
+        - Adapted to Python 3
+
         Sparrow 1.0b4 (2009-07-20)
         --------------------------
         - Picked better default profile

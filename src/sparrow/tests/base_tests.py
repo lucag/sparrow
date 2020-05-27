@@ -83,10 +83,10 @@ class TripleStoreTest(TestCase):
                     </rdf:Description>
                 </rdf:RDF>
             ''')
-        self.db.add_rdfxml(data, 'test', 'http://example.org')
+        self.db.add_rdfxml(data, 'test', 'http://example.org/')
         result = self.db.get_ntriples('test').read()
         self.assertEqual(result.strip()[:-1].strip(),
-                         '<http://example.org> <http://foobar.com#name> "bar"')
+                         '<http://example.org/> <http://foobar.com#name> "bar"')
 
     def test_remove_statements(self: ITripleStore):
         with open_test_file('ntriples') as f:

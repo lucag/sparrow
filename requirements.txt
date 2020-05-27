@@ -3,7 +3,7 @@ lxml~=4.3.0
 rdflib~=5.0.0
 librdflib
 httplib2
-setuptools~=41.4.0
+setuptools
 zc.buildout
 requests
 zope.interface

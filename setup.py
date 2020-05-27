@@ -3,7 +3,7 @@ from os.path import join, dirname
 from setuptools import setup, find_packages
 
 base = dirname(__file__)
-README = join(base, 'src', 'sparrow', 'README.rst')
+README = join(base, 'README.rst')
 
 
 def lines(filename):
@@ -13,7 +13,7 @@ def lines(filename):
 
 setup(
     name='sparrow',
-    version='1.0b4',
+    version='1.0.1',
     author='Jasper Op de Coul (Infrae)',
     author_email='jasper@infrae.com',
     description="Sparrow, Common RDF/SPARQL Database API",

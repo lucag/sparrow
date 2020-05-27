@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 __doc__ = """
 N-Triples Parser
 License: GPL 2, W3C, BSD, or MIT
@@ -13,14 +9,11 @@ import codecs
 import re
 from itertools import tee, zip_longest
 
+from io import BytesIO
 from rdflib.compat import cast_bytes
 from rdflib.term import BNode as bNode
 from rdflib.term import Literal
 from rdflib.term import URIRef as URI
-from six import BytesIO
-from six import string_types
-from six import text_type
-from six import unichr
 from typing import Iterable, List
 
 __all__ = ['unquote', 'uriquote', 'Sink', 'NTriplesParser']
@@ -41,7 +34,7 @@ bufsiz = 2048
 validate = False
 
 
-class Node(text_type):
+class Node(str):
     pass
 
 
@@ -104,7 +97,7 @@ def unquote(s):
     """Unquote an N-Triples string."""
     if not validate:
 
-        if isinstance(s, text_type):  # nquads
+        if isinstance(s, str):  # nquads
             # return decodeUnicodeEscape(s)
             escaped = ''.join(translate(s))
             return escaped
@@ -132,7 +125,7 @@ def unquote(s):
                 codepoint = int(u or U, 16)
                 if codepoint > 0x10FFFF:
                     raise ParseError("Disallowed codepoint: %08X" % codepoint)
-                result.append(unichr(codepoint))
+                result.append(chr(codepoint))
             elif s.startswith('\\'):
                 raise ParseError("Illegal escape at: %s..." % s[:10])
             else:
@@ -191,7 +184,7 @@ class NTriplesParser(object):
 
     def parsestring(self, s):
         """Parse s as an N-Triples string."""
-        if not isinstance(s, string_types):
+        if not isinstance(s, str):
             raise ParseError("Item to parse must be a string instance.")
         f = BytesIO()
         f.write(cast_bytes(s))

@@ -1,19 +1,16 @@
-import codecs
-from typing import List, Any, Tuple, Union
+from io import BytesIO, StringIO
 
 import simplejson
-from io import BytesIO, StringIO
 from lxml import etree
 
 from sparrow import ntriples
 
-SPARQLNS = u'http://www.w3.org/2005/sparql-results#'
-
+SPARQL_NS = u'http://www.w3.org/2005/sparql-results#'
 
 def parse_sparql_result(xml):
     doc = etree.fromstring(xml)
     results = []
-    for result in doc.xpath('/s:sparql/s:results/s:result', namespaces={'s': SPARQLNS}):
+    for result in doc.xpath('/s:sparql/s:results/s:result', namespaces={'s': SPARQL_NS}):
         data = {}
         for binding in result:
             name = binding.attrib['name']
@@ -51,7 +48,7 @@ def parse_sparql_result(xml):
     if not results:
         # maybe this is an ASK query response
         bools = doc.xpath('/s:sparql/s:boolean/text()',
-                          namespaces={'s': SPARQLNS})
+                          namespaces={'s': SPARQL_NS})
         if bools:
             if bools[0] == 'true':
                 return True

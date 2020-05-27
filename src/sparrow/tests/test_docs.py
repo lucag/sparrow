@@ -10,7 +10,7 @@ def test_suite():
 
     suite = unittest.TestSuite()
     suite.addTests([
-        doctest.DocFileSuite('README.rst',
+        doctest.DocFileSuite('../../README.rst',
                              package='sparrow',
                              globs=GLOBS,
                              optionflags=FLAGS),

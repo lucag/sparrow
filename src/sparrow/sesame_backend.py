@@ -34,7 +34,8 @@ class SesameTripleStore(BaseBackend):
     def connect(self, dburi):
         url = urlparse(dburi)
         self._name = url.path[1:]  # Remove slash
-        self._url = 'http://%s/openrdf-sesame' % url.netloc
+        # self._url = 'http://%s/openrdf-sesame' % url.netloc
+        self._url = 'http://%s/rdf4j-server' % url.netloc
         try:
             resp = requests.get(
                 f'{self._url}/repositories',
@@ -116,7 +117,7 @@ class SesameTripleStore(BaseBackend):
                      "Content-length": clength})
 
         if resp.status_code != 204:
-            raise TripleStoreError(resp)
+            raise TripleStoreError(resp.status_code)
 
     def get_rdfxml(self, context):
         return self._serialize('rdfxml', context)
@@ -128,16 +129,15 @@ class SesameTripleStore(BaseBackend):
         return self._serialize('ntriples', context)
 
     def _serialize(self, format, context, pretty=False):
-
-        context = quote(self._get_context(context))
+        quoted_context = quote(self._get_context(context))
         ctype = self._get_mimetype(format)
 
         resp = requests.get(
-            f'{self._url}/repositories/{self._name}/statements?context={context}',
+            f'{self._url}/repositories/{self._name}/statements?context={quoted_context}',
             headers={"Accept": ctype})
 
         if resp.status_code != 200:
-            raise TripleStoreError(resp)
+            raise TripleStoreError(resp.status_code)
         else:
             return StringIO(resp.text)
 
