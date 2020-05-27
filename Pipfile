@@ -12,8 +12,11 @@ v = {editable = true,version = "*"}
 sparrow = {editable = true,path = "."}
 simplejson = "~=3.17.0"
 lxml = "~=4.3.0"
-rdflib = "~=2.4.2"
+rdflib = "~=5.0.0"
 httplib2 = "~=0.17.3"
+typing = "*"
+six = "*"
+librdflib = "*"
 
 [requires]
-python_version = "2.7"
+python_version = "3.7"

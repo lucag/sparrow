@@ -1,7 +1,7 @@
 import os
-from cStringIO import StringIO
 
-from zope.interface import implements
+from io import StringIO
+from zope.interface import implementer
 
 try:
     import RDF
@@ -12,14 +12,12 @@ from sparrow.base_backend import BaseBackend
 from sparrow.error import ConnectionError, TripleStoreError, QueryError
 from sparrow.interfaces import ITripleStore, ISPARQLEndpoint
 from sparrow.utils import (parse_sparql_result,
-                           dict_to_ntriples,
                            ntriples_to_dict,
-                           json_to_ntriples,
                            ntriples_to_json)
 
+@implementer(ITripleStore, ISPARQLEndpoint)
 class RedlandTripleStore(BaseBackend):
-    implements(ITripleStore, ISPARQLEndpoint)
-    
+
     def __init__(self):
         self._nsmap = {}
 
@@ -49,8 +47,8 @@ class RedlandTripleStore(BaseBackend):
         self._add_stream(self._parse(data, 'turtle', '-'), context_name)
 
     def _add_stream(self, stream, context_name):
-        if isinstance(context_name, unicode):
-            context_name = context_name.encode('utf8')
+        # if isinstance(context_name, str):
+        #     context_name = context_name.encode('utf8')
         self._model.add_statements(stream, RDF.Node(context_name))
         
     def _parse(self, file, format, base_uri=None):            
@@ -59,13 +57,13 @@ class RedlandTripleStore(BaseBackend):
         else:
             parser = RDF.Parser(format)
 
-        if isinstance(base_uri, unicode):
-            base_uri = base_uri.encode('utf8')
+        # if isinstance(base_uri, unicode):
+        #     base_uri = base_uri.encode('utf8')
         data = file.read()
         file.close()
         try:
             stream = parser.parse_string_as_stream(data, base_uri)
-        except RDF.RedlandError, err:
+        except RDF.RedlandError as err:
             raise TripleStoreError(err)
         if stream is None:
             raise TripleStoreError('Parsing RDF Failed')
@@ -88,8 +86,8 @@ class RedlandTripleStore(BaseBackend):
         # this sucks, we need a temp model because contexts can not
         # be serialized :(
 
-        if isinstance(context_name, unicode):
-            context_name = context_name.encode('utf8')
+        # if isinstance(context_name, unicode):
+        #     context_name = context_name.encode('utf8')
             
         stream = self._model.as_stream(RDF.Node(context_name))            
         return self._serialize_stream(stream, format)
@@ -116,8 +114,8 @@ class RedlandTripleStore(BaseBackend):
         self._remove(data, 'ntriples', context_name, '-')
 
     def _remove(self, file, format, context, base_uri):
-        if isinstance(context, unicode):
-            context = context.encode('utf8')
+        # if isinstance(context, unicode):
+        #     context = context.encode('utf8')
         context = RDF.Node(context)
         
         stream = self._parse(file, format, base_uri)
@@ -125,8 +123,8 @@ class RedlandTripleStore(BaseBackend):
             self._model.remove_statement(statement, context)
         
     def clear(self, context):
-        if isinstance(context, unicode):
-            context = context.encode('utf8')
+        # if isinstance(context, unicode):
+        #     context = context.encode('utf8')
         self._model.remove_statements_with_context(RDF.Node(context))
     
     def count(self, context=None):
@@ -136,13 +134,13 @@ class RedlandTripleStore(BaseBackend):
         return result
 
     def _query(self, sparql):
-        if isinstance(sparql, unicode):
-            sparql = sparql.encode('utf8')
+        # if isinstance(sparql, unicode):
+        #     sparql = sparql.encode('utf8')
         query = RDF.SPARQLQuery(sparql)
         
         try:
             result = query.execute(self._model)
-        except RDF.RedlandError, err:
+        except RDF.RedlandError as err:
             raise QueryError(err)
         return result
 

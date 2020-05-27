@@ -2,7 +2,14 @@ from os.path import join, dirname
 
 from setuptools import setup, find_packages
 
-README = join(dirname(__file__), 'src', 'sparrow', 'README.txt')
+base = dirname(__file__)
+README = join(base, 'src', 'sparrow', 'README.rst')
+
+
+def lines(filename):
+    with open(filename) as ls:
+        return [l.rstrip() for l in ls]
+
 
 setup(
     name='sparrow',
@@ -29,10 +36,5 @@ setup(
             'start_allegro_server = sparrow.allegro_backend:start_server'
         ]
     },
-    install_requires=[
-        'zope.interface',
-        'simplejson',
-        'httplib2',
-        'lxml',
-    ],
+    install_requires=lines(join(base, 'requirements.txt')),
 )

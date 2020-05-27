@@ -58,7 +58,7 @@ def get_allegro_url():
 def test_suite():
     try:
         sparrow.database('allegro', get_allegro_url())
-    except ConnectionError, err:
+    except ConnectionError as err:
         # allegro not running?
         return TestSuite()
 

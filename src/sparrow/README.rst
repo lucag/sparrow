@@ -96,7 +96,7 @@ So, let's add this to the `persons` context.
 We can now ask the database, which contexts it has:
 
 >>> db.contexts()
-[u'persons']
+['persons']
 
 You can store data in as many different contexts as you like, or put everything
 in a single context.
@@ -108,8 +108,7 @@ Lets do a simple SPARQL query on the database
 We can get the results as a list of dictionaries. This follows the SPARQL
 JSON result format.
 
->>> result
-[{u'x': {'type': u'uri', 'value': u'http://example.org#john'}}]
+>>> assert result == [{'x': {'type': 'uri', 'value': 'http://example.org#john'}}]
 
 Besides querying, we can also get the data back from the database in any
 of the supported formats. We specify which format we want, and which context

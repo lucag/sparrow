@@ -1,10 +1,10 @@
 import os, sys
 from os.path import join
-from urllib import quote, urlencode
+from six.moves.urllib_parse import quote, urlencode
 import socket
-from StringIO import StringIO
+from io import StringIO
 import httplib2
-from zope.interface import implements
+from zope.interface import implementer
 
 from sparrow.error import ConnectionError, TripleStoreError, QueryError
 from sparrow.interfaces import ITripleStore, ISPARQLEndpoint
@@ -14,6 +14,7 @@ from sparrow.utils import (parse_sparql_result,
 
 from sparrow.sesame_backend import SesameTripleStore
 
+@implementer(ITripleStore, ISPARQLEndpoint)
 class AllegroTripleStore(SesameTripleStore):
     def connect(self, dburi):
         host, rest = dburi[7:].split(':', 1)
@@ -43,7 +44,7 @@ class AllegroTripleStore(SesameTripleStore):
         parser = RDF.TurtleParser()
         try:
             parser.parse_string_into_model(model, data.read(),'-')
-        except RDF.RedlandError, err:
+        except RDF.RedlandError as err:
             raise TripleStoreError(err)
         
         serializer = RDF.Serializer(name='ntriples')
@@ -58,7 +59,7 @@ class AllegroTripleStore(SesameTripleStore):
         parser = RDF.Parser()
         try:
             parser.parse_string_into_model(model, data.read(),'-')
-        except RDF.RedlandError, err:
+        except RDF.RedlandError as err:
             raise TripleStoreError(err)
         
         serializer = RDF.Serializer(name='ntriples')
@@ -74,7 +75,7 @@ class AllegroTripleStore(SesameTripleStore):
         data = (data.strip() + '\n')
         try:
             parser.parse_string_into_model(model, data,'-')
-        except RDF.RedlandError, err:
+        except RDF.RedlandError as err:
             raise TripleStoreError(err)
         
         serializer = RDF.Serializer(name='turtle')

@@ -8,3 +8,6 @@ develop-eggs/
 eggs/
 .env
 .installed.cfg
+*.pyc
+venv/
+.tox
