@@ -1,13 +1,12 @@
 import os
 import shutil
-import socket
 import subprocess
 from io import StringIO, BytesIO
 from os.path import join
+from urllib.parse import urlparse, quote, urlencode
 
-import httplib2
+import requests
 from lxml import etree
-from six.moves.urllib_parse import quote, urlencode
 from zope.interface import implementer
 
 from sparrow.base_backend import BaseBackend
@@ -18,49 +17,50 @@ from sparrow.utils import (parse_sparql_result,
                            ntriples_to_json)
 
 
+def to_bytes(response: requests.Response) -> bytes:
+    with BytesIO() as f:
+        for chunk in response.iter_content(chunk_size=128):
+            f.write(chunk)
+        return f.getvalue()
+
+
 @implementer(ITripleStore, ISPARQLEndpoint)
 class SesameTripleStore(BaseBackend):
 
     def __init__(self):
         self._nsmap = {}
+        self._name = self._url = None
 
     def connect(self, dburi):
-        host, rest = dburi[7:].split(':', 1)
-        port, self._name = rest.split('/', 1)
-        self._url = 'http://%s:%s/openrdf-sesame' % (host, port)
-        self._http = httplib2.Http()
+        url = urlparse(dburi)
+        self._name = url.path[1:]  # Remove slash
+        self._url = 'http://%s/openrdf-sesame' % url.netloc
         try:
-            resp, content = self._http.request(
-                '%s/repositories' % self._url,
-                "GET",
+            resp = requests.get(
+                f'{self._url}/repositories',
                 headers={'Accept': 'application/sparql-results+xml'})
-        except socket.error:
-            raise ConnectionError(
-                'Can not connect to repository, is it running?')
+        except requests.ConnectionError as err:
+            raise ConnectionError(f'Got {err} while connecting to repository; is it running?')
 
-        if resp['status'] != '200':
-            raise ConnectionError(
-                'Can not connect to server: %s' % resp['status'])
+        if resp.status_code != 200:
+            raise ConnectionError('Can not connect to server: %d' % resp.status_code)
 
-        for repo in parse_sparql_result(content):
+        for repo in parse_sparql_result(to_bytes(resp)):
             if repo['id']['value'] == self._name:
                 break
         else:
-            raise ConnectionError(
-                'Server has no repository: %s' % self._name)
+            raise ConnectionError('Server has no repository: %s' % self._name)
 
     def disconnect(self):
-        self._http.close()
-        del self._http
+        pass
 
     def contexts(self):
-        resp, content = self._http.request(
-            '%s/repositories/%s/contexts' % (self._url, self._name),
-            "GET",
+        resp = requests.get(
+            f'{self._url}/repositories/{self._name}/contexts',
             headers={'Accept': 'application/sparql-results+xml'})
 
-        return [c['contextID']['value'].split(':', 1)[1] for c in
-                parse_sparql_result(content)]
+        return [c['contextID']['value'].split(':', 1)[1]
+                for c in parse_sparql_result(to_bytes(resp))]
 
     @staticmethod
     def _get_mimetype(format):
@@ -79,14 +79,14 @@ class SesameTripleStore(BaseBackend):
         # store also in _nsmap for allegro turtle workaround
         self._nsmap[prefix] = namespace
 
-        clength = str(len(namespace))
-        resp, content = self._http.request(
-            '%s/repositories/%s/namespaces/%s' % (self._url, self._name, prefix),
-            'PUT',
-            body=namespace,
-            headers={"Content-length": clength})
-        if resp['status'] != '204':
-            raise TripleStoreError(content)
+        content_len = str(len(namespace))
+        resp = requests.put(
+            f'{self._url}/repositories/{self._name}/namespaces/{prefix}',
+            data=namespace,
+            headers={"Content-length": content_len})
+
+        if resp.status_code != 204:
+            raise TripleStoreError(resp)
 
     def add_rdfxml(self, data, context, base_uri):
         data = self._get_file(data)
@@ -108,19 +108,15 @@ class SesameTripleStore(BaseBackend):
         params = {'context': self._get_context(context)}
         if base_uri:
             params['baseURI'] = '<%s>' % base_uri
-        params = urlencode(params)
 
-        content: bytes
-        resp, content = self._http.request(
-            '%s/repositories/%s/statements?%s' % (
-                self._url, self._name, params),
-            'POST',
-            body=data,
+        resp = requests.post(
+            f'{self._url}/repositories/{self._name}/statements?{urlencode(params)}',
+            data=data,
             headers={"Content-type": ctype,
                      "Content-length": clength})
 
-        if resp['status'] != '204':
-            raise TripleStoreError(content)
+        if resp.status_code != 204:
+            raise TripleStoreError(resp)
 
     def get_rdfxml(self, context):
         return self._serialize('rdfxml', context)
@@ -136,16 +132,14 @@ class SesameTripleStore(BaseBackend):
         context = quote(self._get_context(context))
         ctype = self._get_mimetype(format)
 
-        content: bytes
-        resp, content = self._http.request(
-            '%s/repositories/%s/statements?context=%s' % (
-                self._url, self._name, context),
-            'GET',
+        resp = requests.get(
+            f'{self._url}/repositories/{self._name}/statements?context={context}',
             headers={"Accept": ctype})
-        if resp['status'] != '200':
-            raise TripleStoreError(content)
 
-        return StringIO(content.decode('utf-8'))
+        if resp.status_code != 200:
+            raise TripleStoreError(resp)
+        else:
+            return StringIO(resp.text)
 
     def remove_rdfxml(self, data, context, base_uri):
         data = self._get_file(data)
@@ -168,80 +162,71 @@ class SesameTripleStore(BaseBackend):
         if base_uri:
             params['baseURI'] = '<%s>' % base_uri
         params = urlencode(params)
-        resp, content = self._http.request(
-            '%s/repositories/%s/statements?%s' % (
-                self._url, self._name, params),
-            'DELETE',
-            body=data,
+        content = requests.delete(
+            f'{self._url}/repositories/{self._name}/statements?{params}',
+            data=data,
             headers={"Content-type": ctype,
                      "Content-length": clength})
-        if resp['status'] != '204':
+
+        if content.status_code != 204:
             raise TripleStoreError(content)
 
     def clear(self, context):
         context = quote(self._get_context(context))
-        resp, content = self._http.request(
-            '%s/repositories/%s/statements?context=%s' % (
-                self._url, self._name, context),
-            'DELETE')
-        if resp['status'] != '204':
-            raise TripleStoreError(content)
+        resp = requests.delete(
+            f'{self._url}/repositories/{self._name}/statements?context={context}')
+
+        if resp.status_code != 204:
+            raise TripleStoreError(resp)
 
     def count(self, context=None):
-        if context is None:
-            context = ''
+        context = '?context=' + quote(self._get_context(context)) if context else ''
+        resp = requests.get(f'{self._url}/repositories/{self._name}/size{context}')
+
+        if resp.status_code != 200:
+            raise TripleStoreError(resp)
         else:
-            context = '?context=' + quote(self._get_context(context))
-        resp, content = self._http.request(
-            '%s/repositories/%s/size%s' % (
-                self._url, self._name, context),
-            'GET')
-        if resp['status'] != '200':
-            raise TripleStoreError(content)
-        return int(content)
+            return int(resp.text)
 
     def select(self, sparql):
         params = urlencode({'query': sparql,
                             'queryLn': 'SPARQL',
                             'infer': 'false'})
 
-        resp, content = self._http.request(
-            '%s/repositories/%s?%s' % (
-                self._url, self._name, params),
-            'GET',
+        content = requests.get(
+            f'{self._url}/repositories/{self._name}?{params}',
             headers={'Accept': 'application/sparql-results+xml'})
 
-        if resp['status'] != '200':
-            raise QueryError(content)
+        if content.status_code != 200:
+            raise QueryError(content.status_code)
 
         # Allegro Graph returns status 200 when parsing failed
-        if content.startswith(b'Server error:'):
+        if content.text.startswith('Server error:'):
             raise QueryError(content[14:])
 
-        return parse_sparql_result(content)
+        return parse_sparql_result(to_bytes(content))
 
     def ask(self, sparql):
         params = urlencode({'query': sparql,
                             'queryLn': 'SPARQL',
                             'infer': 'false'})
 
-        resp, content = self._http.request(
-            '%s/repositories/%s?%s' % (
-                self._url, self._name, params),
-            'GET',
+        resp = requests.get(
+            f'{self._url}/repositories/{self._name}?{params}',
             headers={'Accept': 'application/sparql-results+xml'})
 
-        if resp['status'] != '200':
-            raise QueryError(content)
+        if resp.status_code != 200:
+            raise QueryError(resp.status_code)
+
         # Allegro Graph returns status 200 when parsing failed
-        if content.startswith(b'Server error:'):
-            raise QueryError(content[14:])
+        if resp.text.startswith('Server error:'):
+            raise QueryError(resp[14:])
 
-        return parse_sparql_result(content)
+        return parse_sparql_result(to_bytes(resp))
 
-    def construct(self, sparql, format):
-        out_format = format
-        if format in ('json', 'dict'):
+    def construct(self, sparql, fmt):
+        out_format = fmt
+        if fmt in ('json', 'dict'):
             out_format = 'ntriples'
         ctype = self._get_mimetype(out_format)
         params = urlencode({
@@ -249,24 +234,24 @@ class SesameTripleStore(BaseBackend):
             'queryLn': 'SPARQL',
             'infer': 'false'})
 
-        content: bytes
-        resp, content = self._http.request(
-            '%s/repositories/%s?%s' % (self._url, self._name, params),
-            'GET',
+        # content: bytes
+        resp = requests.get(
+            f'{self._url}/repositories/{self._name}?{params}',
             headers={'Accept': ctype})
 
-        if resp['status'] != '200':
-            raise QueryError(content)
-        # Allegro Graph returns status 200 when parsing failed
-        if content.startswith(b'Server error:'):
-            raise QueryError(content[14:])
+        if resp.status_code != 200:
+            raise QueryError(resp.status_code)
 
-        if format == 'json':
-            return ntriples_to_json(BytesIO(content))
-        elif format == 'dict':
-            return ntriples_to_dict(BytesIO(content))
+        # Allegro Graph returns status 200 when parsing failed
+        if resp.text.startswith('Server error:'):
+            raise QueryError(resp[14:])
+
+        if fmt == 'json':
+            return ntriples_to_json(BytesIO(to_bytes(resp)))
+        elif fmt == 'dict':
+            return ntriples_to_dict(BytesIO(to_bytes(resp)))
         else:
-            return StringIO(content.decode('utf-8'))
+            return StringIO(resp.text)
 
 
 def start_server(host, port, uri, id, title, path):
@@ -279,8 +264,8 @@ def start_server(host, port, uri, id, title, path):
     if int(connector_el.attrib['port']) != port:
         connector_el.attrib['port'] = str(port)
         doc.write(server_conf)
-    engine_el = doc.xpath(
-        '//Service[@name="Catalina"]/Engine[@name="Catalina"]')[0]
+
+    engine_el = doc.xpath('//Service[@name="Catalina"]/Engine[@name="Catalina"]')[0]
     if engine_el.attrib['defaultHost'] != host:
         engine_el.attrib['defaultHost'] = host
 
@@ -294,6 +279,7 @@ def start_server(host, port, uri, id, title, path):
     if not os.path.isfile(join(tomcat_dir, 'webapps', 'openrdf-sesame.war')):
         shutil.copyfile(join(sesame_dir, 'war', 'openrdf-sesame.war'),
                         join(tomcat_dir, 'webapps', 'openrdf-sesame.war'))
+
     if not os.path.isfile(join(tomcat_dir, 'webapps', 'openrdf-workbench.war')):
         shutil.copyfile(join(sesame_dir, 'war', 'openrdf-workbench.war'),
                         join(tomcat_dir, 'webapps', 'openrdf-workbench.war'))

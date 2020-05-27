@@ -7,8 +7,8 @@ README = join(base, 'src', 'sparrow', 'README.rst')
 
 
 def lines(filename):
-    with open(filename) as ls:
-        return [l.rstrip() for l in ls]
+    with open(filename) as lines:
+        return [line.rstrip() for line in lines]
 
 
 setup(

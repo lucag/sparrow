@@ -97,19 +97,19 @@ class AllegroTripleStore(SesameTripleStore):
         data = self.get_ntriples(context)
         return self._ntriples_to_turtle(data)
 
-    def construct(self, query, format):
+    def construct(self, query, fmt):
         result =  super(AllegroTripleStore, self).construct(query, 'rdfxml')
-        if format == 'rdfxml':
+        if fmt == 'rdfxml':
             return result
         
         result = self._rdfxml_to_ntriples(result)
-        if format == 'ntriples':
+        if fmt == 'ntriples':
             return result
-        elif format == 'json':
+        elif fmt == 'json':
             return  ntriples_to_json(result)
-        elif format == 'dict':
+        elif fmt == 'dict':
             return ntriples_to_dict(result)
-        elif format == 'turtle':
+        elif fmt == 'turtle':
             return self._ntriples_to_turtle(result)
 
 

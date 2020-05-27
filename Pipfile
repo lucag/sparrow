@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 "zc.buildout" = "*"
 "zope.testrunner" = "*"
+sparrow = {editable = true,path = "."}
 v = {editable = true,version = "*"}
 
 [packages]
@@ -15,8 +16,8 @@ lxml = "~=4.3.0"
 rdflib = "~=5.0.0"
 httplib2 = "~=0.17.3"
 typing = "*"
-six = "*"
 librdflib = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
