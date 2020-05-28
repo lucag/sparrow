@@ -24,17 +24,17 @@ setup(
                  "Topic :: Software Development :: Libraries :: Python Modules",
                  "Environment :: Web Environment"],
     keywords='python RDF SPARQL',
-    packages=find_packages('src'),
+    packages=find_packages(where='src', exclude=['*tests*']),
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
     license='BSD',
-    entry_points={
-        'console_scripts': [
-            'start_sesame_server = sparrow.sesame_backend:start_server',
-            'configure_sesame = sparrow.sesame_backend:configure_server',
-            'start_allegro_server = sparrow.allegro_backend:start_server'
-        ]
-    },
+    # entry_points={
+    #     'console_scripts': [
+    #         'start_sesame_server = sparrow.sesame_backend:start_server',
+    #         'configure_sesame = sparrow.sesame_backend:configure_server',
+    #         'start_allegro_server = sparrow.allegro_backend:start_server'
+    #     ]
+    # },
     install_requires=lines(join(base, 'requirements.txt')),
 )
