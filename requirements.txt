@@ -1,8 +1,6 @@
-simplejson~=3.17.0
-lxml~=4.3.0
-rdflib~=5.0.0
-librdflib
-httplib2
+simplejson
+lxml
+rdflib
 setuptools
 zc.buildout
 requests

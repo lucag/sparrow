@@ -3,7 +3,6 @@ from os.path import join
 from six.moves.urllib_parse import quote, urlencode
 import socket
 from io import StringIO
-import httplib2
 from zope.interface import implementer
 
 from sparrow.error import ConnectionError, TripleStoreError, QueryError

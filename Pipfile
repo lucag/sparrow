@@ -11,10 +11,9 @@ v = {editable = true,version = "*"}
 
 [packages]
 sparrow = {editable = true,path = "."}
-simplejson = "~=3.17.0"
-lxml = "~=4.3.0"
-rdflib = "~=5.0.0"
-httplib2 = "~=0.17.3"
+simplejson = "*"
+lxml = "*"
+rdflib = "*"
 typing = "*"
 librdflib = "*"
 requests = "*"

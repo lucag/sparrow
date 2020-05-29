@@ -2,6 +2,18 @@
 Sparrow
 =======
 
+Foreword abd Disclaimer
+-----------------------
+
+This is an old library that I maintain for an old project. I updated the dependencies
+and modified it to run on Python 3.6+. Only `rdflib`_ and `RDF4J`_ have been tested;
+`Allegro Graph`_ is not working and I have no interest in making it work at this time. Also,
+I haven't pushed it to `PyPI`_ — please feel free to do so if interested. Credit for the
+library should go to the original implementor.
+
+.. _RDF4J: http://www.rdf4j.com
+.. _PyPI: https://pypi.org
+
 Introduction
 ------------
 
@@ -50,16 +62,18 @@ Sparrow comes with buildout profiles for several databases.
 These profiles will install and setup the different backends for you.
 You don't have to use buildout, but I would recommend it.
 
-To install type:
+To install you need `Pipenv`_. Having installed the latter, type:
+
 
 ::
 
-  > python2.5 bootstrap.py
-  > ./bin/buildout
+  > pipenv -dev -e .
 
 This will create some scripts in the bin folder like a testrunner and
 (depending on which profile you choose) scripts for configuring and starting
 the different backends.
+
+.. _Pipenv: https://pipenv-fork.readthedocs.io/en/latest/
 
 Usage
 -----
